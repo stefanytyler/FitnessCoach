@@ -144,7 +144,30 @@
     .badge-blue { background: var(--blue-bg); color: var(--blue); border: 1px solid var(--blue-border); }
     .badge-red { background: var(--red-bg); color: var(--red); border: 1px solid var(--red-border); }
     .badge-amber { background: var(--amber-bg); color: var(--amber); }
-    .goal-badge { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 20px; background: var(--accent-bg); color: var(--accent); border: 1px solid var(--accent-border); }
+    .injury-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 10px; margin-bottom: 1rem; }
+    .injury-card { display: flex; align-items: center; gap: 12px; padding: 14px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); cursor: pointer; transition: all 0.15s; user-select: none; }
+    .injury-card:hover { border-color: var(--border-hover); }
+    .injury-card.active { border-color: var(--red-border); background: var(--red-bg); }
+    .injury-icon { font-size: 22px; width: 36px; text-align: center; flex-shrink: 0; }
+    .injury-info { flex: 1; }
+    .injury-name { font-size: 14px; font-weight: 500; color: var(--text); }
+    .injury-card.active .injury-name { color: var(--red); }
+    .injury-desc { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+    .injury-check { width: 18px; height: 18px; border-radius: 50%; border: 1.5px solid var(--border-hover); display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all 0.15s; }
+    .injury-card.active .injury-check { background: var(--red); border-color: var(--red); }
+    .injury-card.active .injury-check svg { display: block; }
+    .injury-check svg { display: none; width: 10px; height: 10px; stroke: white; }
+    .warn-badge { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 10px; background: var(--amber-bg); color: var(--amber); border: 1px solid rgba(251,191,36,0.3); }
+    .warn-badge svg { width: 10px; height: 10px; }
+    .alt-exercise { margin-top: 10px; padding: 10px 12px; background: var(--surface2); border-left: 3px solid var(--amber); border-radius: 0 8px 8px 0; }
+    .alt-label { font-size: 11px; color: var(--amber); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px; }
+    .alt-name { font-size: 13px; font-weight: 500; color: var(--text); }
+    .alt-reason { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+    .btn-swap { display: inline-flex; align-items: center; gap: 4px; margin-top: 6px; padding: 4px 10px; font-size: 12px; font-family: var(--font); font-weight: 500; border-radius: 6px; cursor: pointer; border: 1px solid rgba(251,191,36,0.3); background: var(--amber-bg); color: var(--amber); transition: all 0.15s; }
+    .btn-swap:hover { opacity: 0.8; }
+    .btn-swap svg { width: 12px; height: 12px; }
+    .swapped-badge { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 10px; background: var(--accent-bg); color: var(--accent); border: 1px solid var(--accent-border); }
+    .active-injuries-bar { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 1rem; }
     .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; }
     .section-header .card-title { margin: 0; }
     .weight-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; }
@@ -186,6 +209,10 @@
     <button class="tab" id="tab-btn-log" onclick="showTab('log')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
       Log
+    </button>
+    <button class="tab" id="tab-btn-injuries" onclick="showTab('injuries')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 100 20A10 10 0 0012 2z"/><path d="M12 8v4M12 16h.01"/></svg>
+      Injuries
     </button>
     <button class="tab" id="tab-btn-progress" onclick="showTab('progress')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
@@ -271,6 +298,10 @@
     <div id="log-content"><div class="empty"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg><p>Fill in your profile and hit <strong>Calculate my goals</strong> first.</p></div></div>
   </div>
 
+  <div id="pane-injuries" class="pane">
+    <div id="injuries-content"></div>
+  </div>
+
   <div id="pane-progress" class="pane">
     <div id="progress-content"><div class="empty"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg><p>No data yet — log some workouts and weight entries to see your progress.</p></div></div>
   </div>
@@ -346,6 +377,7 @@ function showTab(name){
   document.getElementById('pane-'+name).classList.add('show');
   document.getElementById('tab-btn-'+name).classList.add('active');
   if(name==='log'&&calculated)renderLog();
+  if(name==='injuries')renderInjuries();
   if(name==='progress')renderProgress();
 }
 
@@ -450,10 +482,27 @@ function ytLink(exercise){
 function buildExGuide(days){
   var html='';
   var exMap=EXERCISES[days];
+  var active=getInjuries();
   Object.keys(exMap).forEach(function(day){
     html+='<div class="exercise-block"><div class="exercise-day-label">'+day+'</div><div class="exercise-pills">';
     exMap[day].forEach(function(e){
-      html+='<a class="ex-pill" href="'+ytLink(e)+'" target="_blank" rel="noopener" title="Watch '+e+' demo on YouTube">'+YT_ICON+e+'</a>';
+      var risky=isExerciseRisky(e);
+      var altData=risky?getAlt(e):null;
+      if(risky&&altData){
+        html+='<div style="display:inline-flex;flex-direction:column;gap:4px;margin-bottom:4px;">'+
+          '<div style="display:flex;align-items:center;gap:5px;">'+
+            '<a class="ex-pill" href="'+ytLink(e)+'" target="_blank" rel="noopener" style="border-color:rgba(251,191,36,0.4);">'+YT_ICON+e+'</a>'+
+            '<span class="warn-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="10" height="10"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>Risk</span>'+
+          '</div>'+
+          '<div style="display:flex;align-items:center;gap:5px;padding-left:4px;">'+
+            '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="var(--amber)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>'+
+            '<a class="ex-pill" href="'+ytLink(altData.alt)+'" target="_blank" rel="noopener" style="border-color:var(--accent-border);color:var(--accent);">'+YT_ICON+altData.alt+'</a>'+
+            '<span style="font-size:11px;color:var(--text-muted);">'+altData.reason+'</span>'+
+          '</div>'+
+        '</div>';
+      } else {
+        html+='<a class="ex-pill" href="'+ytLink(e)+'" target="_blank" rel="noopener" title="Watch '+e+' demo on YouTube">'+YT_ICON+e+'</a>';
+      }
     });
     html+='</div></div>';
   });
@@ -461,76 +510,153 @@ function buildExGuide(days){
 }
 
 function getTodayExercises(){
-  var todayIdx=(new Date().getDay()+6)%7;
-  var focus=SPLITS[splitDays][todayIdx];
-  var exMap=EXERCISES[splitDays];
-  var exercises=[];
-  Object.keys(exMap).forEach(function(day){
-    if(day.toLowerCase().indexOf(focus.toLowerCase())===0)exercises=exMap[day];
-  });
-  if(!exercises.length){
-    var key=Object.keys(exMap).find(function(k){return k.toLowerCase().indexOf(focus.toLowerCase())>=0;});
-    if(key)exercises=exMap[key];
-  }
-  return exercises;
+  var selDate = selectedLogDate || todayDate();
+  var d = new Date(selDate + 'T12:00:00');
+  var dayIdx = (d.getDay() + 6) % 7;
+  return getExercisesForDayIdx(dayIdx);
 }
 
-function renderLog(){
-  var todayIdx=(new Date().getDay()+6)%7;
-  var focus=SPLITS[splitDays][todayIdx];
-  var isRest=focus==='Rest';
-  var exercises=getTodayExercises();
-  var logs=getLogs();
-  var todayStr=todayDate();
-  var dayLog=logs[todayStr]||{exercises:{},done:{}};
-  sessionLog={};
+var selectedLogDate = '';
 
-  // pre-load session from saved
+function getExercisesForDayIdx(dayIdx){
+  var focus = SPLITS[splitDays][dayIdx];
+  if(focus === 'Rest') return [];
+  var exMap = EXERCISES[splitDays];
+  var keys = Object.keys(exMap);
+  var matchingKeys = keys.filter(function(k){ return k.toLowerCase().indexOf(focus.toLowerCase()) === 0; });
+  if(!matchingKeys.length) matchingKeys = keys.filter(function(k){ return k.toLowerCase().indexOf(focus.toLowerCase()) >= 0; });
+  if(!matchingKeys.length) return [];
+  if(matchingKeys.length === 1) return exMap[matchingKeys[0]];
+  var sched = SPLITS[splitDays];
+  var occurrencesBefore = 0;
+  for(var i = 0; i < dayIdx; i++){
+    if(sched[i].toLowerCase() === focus.toLowerCase()) occurrencesBefore++;
+  }
+  return exMap[matchingKeys[occurrencesBefore % matchingKeys.length]];
+}
+
+function getWeightForDate(dateStr){
+  var arr = getWeightLog();
+  var entry = arr.find(function(e){ return e.date === dateStr; });
+  return entry ? entry.value : null;
+}
+
+function renderLog(dateStr){
+  if(dateStr) selectedLogDate = dateStr;
+  if(!selectedLogDate) selectedLogDate = todayDate();
+
+  // figure out which day of the week the selected date is
+  var selDate = new Date(selectedLogDate + 'T12:00:00');
+  var selDayIdx = (selDate.getDay() + 6) % 7; // 0=Mon ... 6=Sun
+  var focus = SPLITS[splitDays][selDayIdx];
+  var isRest = focus === 'Rest';
+  var exercises = getExercisesForDayIdx(selDayIdx);
+  var logs = getLogs();
+  var dayLog = logs[selectedLogDate] || {exercises:{}, done:{}, swapped:{}};
+  sessionLog = {};
+
   Object.keys(dayLog.exercises).forEach(function(exName){
-    sessionLog[exName]={sets:dayLog.exercises[exName].sets.slice(),done:!!(dayLog.done&&dayLog.done[exName])};
+    sessionLog[exName] = {sets: dayLog.exercises[exName].sets.slice(), done: !!(dayLog.done && dayLog.done[exName])};
   });
 
-  var html='<div class="card"><div class="section-header"><p class="card-title" style="margin:0;">Log today\'s weight</p></div>'+
-  '<div class="weight-entry-row"><div class="form-group"><label id="wlog-lbl">Weight ('+weightUnit+')</label>'+
-  '<input type="number" id="wlog-val" placeholder="e.g. '+(weightUnit==='kg'?'79.5':'175')+'" step="0.1"></div>'+
-  '<button class="btn-sm accent" onclick="logWeight()" style="margin-bottom:1px;">Save weight</button></div></div>';
+  var isToday = selectedLogDate === todayDate();
+  var displayDateObj = new Date(selectedLogDate + 'T12:00:00');
+  var displayDateStr = displayDateObj.toLocaleDateString('en-US', {weekday:'long', month:'short', day:'numeric'});
+
+  var html = '<div class="card">'+
+    '<div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">'+
+      '<div class="form-group" style="flex:1;margin:0;">'+
+        '<label style="font-size:12px;color:var(--text-muted);margin-bottom:5px;display:block;">Logging for</label>'+
+        '<input type="date" id="log-date-picker" value="'+selectedLogDate+'" max="'+todayDate()+'" onchange="renderLog(this.value)" style="font-size:14px;">'+
+      '</div>'+
+      '<div style="display:flex;gap:6px;margin-top:18px;">'+
+        (isToday?'':'<button class="btn-sm" onclick="renderLog(todayDate())">Back to today</button>')+
+      '</div>'+
+    '</div>'+
+    '<div style="display:flex;align-items:center;justify-content:space-between;">'+
+      '<div>'+
+        '<div style="font-size:14px;font-weight:500;color:var(--text);">'+displayDateStr+'</div>'+
+        '<div style="font-size:12px;color:var(--text-muted);margin-top:2px;">'+
+          (isRest ? 'Rest day' : focus+' &mdash; '+SPLIT_NAMES[splitDays])+
+        '</div>'+
+      '</div>'+
+      (dayLog && Object.keys(dayLog.exercises).length > 0 ?
+        '<span class="badge badge-blue">'+Object.keys(dayLog.exercises).length+' exercises logged</span>' : '')+
+    '</div>'+
+  '</div>';
+
+  // weight log card
+  html += '<div class="card"><div class="section-header"><p class="card-title" style="margin:0;">Log weight</p></div>'+
+    '<div class="weight-entry-row"><div class="form-group"><label id="wlog-lbl">Weight ('+weightUnit+')</label>'+
+    '<input type="number" id="wlog-val" placeholder="e.g. '+(weightUnit==='kg'?'79.5':'175')+'" step="0.1" '+(getWeightForDate(selectedLogDate)?'value="'+getWeightForDate(selectedLogDate)+'"':'')+'>'+
+    '</div>'+
+    '<button class="btn-sm accent" onclick="logWeight()" style="margin-bottom:1px;">Save weight</button></div></div>';
 
   if(isRest){
-    html+='<div class="card"><div style="text-align:center;padding:1.5rem 0;color:var(--text-muted);"><p style="font-size:28px;margin-bottom:8px;">Rest day</p><p style="font-weight:500;">Recover well!</p><p style="font-size:13px;margin-top:4px;">Come back tomorrow stronger.</p></div></div>';
+    html += '<div class="card"><div style="text-align:center;padding:1.5rem 0;color:var(--text-muted);"><p style="font-size:28px;margin-bottom:8px;">Rest day</p><p style="font-weight:500;">Recover well!</p><p style="font-size:13px;margin-top:4px;">No workout scheduled.</p></div></div>';
   } else {
-    html+='<div class="card"><div class="section-header"><p class="card-title" style="margin:0;">Today\'s workout - '+focus+'</p>'+
-    '<span style="font-size:12px;color:var(--text-muted);">'+new Date().toLocaleDateString('en-US',{weekday:'long',month:'short',day:'numeric'})+'</span></div>'+
-    '<div id="exercise-log-list">';
+    html += '<div class="card"><div class="section-header"><p class="card-title" style="margin:0;">Workout &mdash; '+focus+'</p></div>'+
+      '<div id="exercise-log-list">';
+
     exercises.forEach(function(exName,ei){
       var exLog=dayLog.exercises[exName]||{sets:[{weight:'',reps:'',diff:'moderate'}]};
       if(!sessionLog[exName])sessionLog[exName]={sets:exLog.sets.slice(),done:!!(dayLog.done&&dayLog.done[exName])};
       var isDone=!!(dayLog.done&&dayLog.done[exName]);
-      html+='<div class="exercise-log-card" id="excard-'+ei+'">'+
-        '<div class="exercise-log-header" onclick="toggleEx('+ei+')">'+
-          '<div class="exercise-log-title">'+
-            '<div class="ex-check'+(isDone?' done':'')+'" id="excheck-'+ei+'">'+
-              '<svg class="ck" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg>'+
-            '</div>'+
-            '<span class="ex-name">'+exName+'</span>'+
-            '<a href="'+ytLink(exName)+'" target="_blank" rel="noopener" title="Watch '+exName+' demo" onclick="event.stopPropagation()" style="display:inline-flex;align-items:center;color:var(--red);opacity:0.5;transition:opacity 0.15s;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.5">'+
-              '<svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M23 7s-.3-2-1.2-2.8c-1.1-1.2-2.4-1.2-3-1.3C16.2 2.8 12 2.8 12 2.8s-4.2 0-6.8.2c-.6.1-1.9.1-3 1.3C1.3 5 1 7 1 7S.7 9.1.7 11.2v2c0 2 .3 4.1.3 4.1s.3 2 1.2 2.8c1.1 1.2 2.6 1.1 3.3 1.2C7.5 21.5 12 21.5 12 21.5s4.2 0 6.8-.2c.6-.1 1.9-.1 3-1.3.9-.8 1.2-2.8 1.2-2.8s.3-2.1.3-4.1v-2C23.3 9.1 23 7 23 7zM9.7 15.5V8.4l8.1 3.6-8.1 3.5z"/></svg>'+
-            '</a>'+
+      var risky=isExerciseRisky(exName);
+      var altData=risky?getAlt(exName):null;
+      var swappedTo=(dayLog.swapped&&dayLog.swapped[exName])||'';
+      var displayName=swappedTo||exName;
+
+      // card open
+      html+='<div class="exercise-log-card" id="excard-'+ei+'">';
+
+      // header row (always visible, clicking toggles sets)
+      html+='<div class="exercise-log-header" onclick="toggleEx('+ei+')">'+
+        '<div class="exercise-log-title">'+
+          '<div class="ex-check'+(isDone?' done':'')+'" id="excheck-'+ei+'">'+
+            '<svg class="ck" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg>'+
           '</div>'+
-          '<div style="display:flex;align-items:center;gap:8px;">'+
-            '<span class="ex-set-count" id="setcount-'+ei+'">'+exLog.sets.length+' set'+(exLog.sets.length!==1?'s':'')+'</span>'+
-            '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>'+
-          '</div>'+
+          '<span class="ex-name">'+displayName+'</span>'+
+          (swappedTo?'<span class="swapped-badge" style="margin-left:5px;">swapped</span>':'')+ 
+          (risky&&!swappedTo?'<span class="warn-badge" style="margin-left:5px;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="10" height="10"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>Risk</span>':'')+
+          '<a href="'+ytLink(displayName)+'" target="_blank" rel="noopener" onclick="event.stopPropagation()" style="display:inline-flex;align-items:center;margin-left:5px;color:var(--red);opacity:0.5;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.5">'+
+            '<svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M23 7s-.3-2-1.2-2.8c-1.1-1.2-2.4-1.2-3-1.3C16.2 2.8 12 2.8 12 2.8s-4.2 0-6.8.2c-.6.1-1.9.1-3 1.3C1.3 5 1 7 1 7S.7 9.1.7 11.2v2c0 2 .3 4.1.3 4.1s.3 2 1.2 2.8c1.1 1.2 2.6 1.1 3.3 1.2C7.5 21.5 12 21.5 12 21.5s4.2 0 6.8-.2c.6-.1 1.9-.1 3-1.3.9-.8 1.2-2.8 1.2-2.8s.3-2.1.3-4.1v-2C23.3 9.1 23 7 23 7zM9.7 15.5V8.4l8.1 3.6-8.1 3.5z"/></svg>'+
+          '</a>'+
         '</div>'+
-        '<div class="exercise-log-body" id="exbody-'+ei+'">'+
-          '<div class="set-header"><span></span><span>Weight ('+weightUnit+')</span><span>Reps</span><span>Difficulty</span><span></span></div>'+
-          '<div id="sets-'+ei+'">';
+        '<div style="display:flex;align-items:center;gap:8px;">'+
+          '<span class="ex-set-count" id="setcount-'+ei+'">'+exLog.sets.length+' set'+(exLog.sets.length!==1?'s':'')+'</span>'+
+          '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>'+
+        '</div>'+
+      '</div>';
+
+      // injury alt panel — OUTSIDE the collapsible body, always visible when risky
+      if(risky&&altData&&!swappedTo){
+        html+='<div class="alt-exercise" style="margin:0 16px 12px;">'+
+          '<div class="alt-label">Safer alternative for your injury</div>'+
+          '<div class="alt-name">'+altData.alt+'</div>'+
+          '<div class="alt-reason">'+altData.reason+'</div>'+
+          '<button class="btn-swap" onclick="event.stopPropagation();swapExercise(\''+exName+'\',\''+altData.alt+'\','+ei+')">'+
+            '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7 16V4m0 0L3 8m4-4l4 4M17 8v12m0 0l4-4m-4 4l-4-4"/></svg>'+
+            'Swap to '+altData.alt+
+          '</button>'+
+        '</div>';
+      }
+
+      // collapsible sets body — auto-open if risky
+      html+='<div class="exercise-log-body'+(risky&&altData&&!swappedTo?' open':'')+'" id="exbody-'+ei+'">'+
+        '<div class="set-header"><span></span><span>Weight ('+weightUnit+')</span><span>Reps</span><span>Difficulty</span><span></span></div>'+
+        '<div id="sets-'+ei+'">';
       exLog.sets.forEach(function(s,si){html+=renderSetRow(ei,si,s,exLog.sets.length);});
       html+='</div>'+
         '<div class="add-set-row">'+
           '<button class="btn-sm" onclick="addSet('+ei+',\''+exName+'\')">+ Add set</button>'+
           '<button class="btn-sm accent" onclick="markDone('+ei+',\''+exName+'\')">Mark done</button>'+
-        '</div></div></div>';
+        '</div></div>';
+
+      // card close
+      html+='</div>';
     });
+
     html+='</div></div><div class="save-bar"><button class="btn-primary" onclick="saveWorkout()">'+
       '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>'+
       'Save workout log</button></div>';
@@ -601,13 +727,23 @@ function markDone(ei,exName){
   if(check){check.classList.add('done');}
 }
 
-function saveWorkout(){
-  var todayStr=todayDate();
+function swapExercise(origName,altName,ei){
+  var logDate=selectedLogDate||todayDate();
   var logs=getLogs();
-  if(!logs[todayStr])logs[todayStr]={exercises:{},done:{}};
+  if(!logs[logDate])logs[logDate]={exercises:{},done:{},swapped:{}};
+  if(!logs[logDate].swapped)logs[logDate].swapped={};
+  logs[logDate].swapped[origName]=altName;
+  saveLogs(logs);
+  renderLog();
+}
+
+function saveWorkout(){
+  var logDate=selectedLogDate||todayDate();
+  var logs=getLogs();
+  if(!logs[logDate])logs[logDate]={exercises:{},done:{}};
   Object.keys(sessionLog).forEach(function(exName){
-    logs[todayStr].exercises[exName]={sets:sessionLog[exName].sets};
-    if(sessionLog[exName].done)logs[todayStr].done[exName]=true;
+    logs[logDate].exercises[exName]={sets:sessionLog[exName].sets};
+    if(sessionLog[exName].done)logs[logDate].done[exName]=true;
   });
   saveLogs(logs);
   sessionLog={};
@@ -619,9 +755,9 @@ function logWeight(){
   var val=parseFloat(document.getElementById('wlog-val').value);
   if(!val){alert('Please enter a weight value.');return;}
   var wArr=getWeightLog();
-  var todayStr=todayDate();
-  var existing=wArr.findIndex(function(e){return e.date===todayStr;});
-  var entry={date:todayStr,value:val,unit:weightUnit};
+  var logDate=selectedLogDate||todayDate();
+  var existing=wArr.findIndex(function(e){return e.date===logDate;});
+  var entry={date:logDate,value:val,unit:weightUnit};
   if(existing>=0)wArr[existing]=entry;else wArr.push(entry);
   wArr.sort(function(a,b){return a.date.localeCompare(b.date);});
   saveWeightLog(wArr);
@@ -714,8 +850,153 @@ function buildWeightChart(wArr){
     '</svg></div><p style="font-size:11px;color:var(--text-dim);margin-top:4px;">'+wArr.length+' data point'+(wArr.length!==1?'s':'')+' &middot; '+weightUnit+'</p>';
 }
 
+// ── Injury data ───────────────────────────────────────────────────────────────
+var INJURIES = [
+  { id:'back',    icon:'🔴', name:'Lower back',  desc:'Herniated disc, strain, sciatica' },
+  { id:'knees',   icon:'🦵', name:'Knees',       desc:'Patella, ACL/MCL, runner\'s knee' },
+  { id:'shoulders',icon:'💪',name:'Shoulders',   desc:'Rotator cuff, impingement, AC joint' },
+  { id:'wrists',  icon:'🤚', name:'Wrists',      desc:'Carpal tunnel, tendinitis, sprains' },
+  { id:'hips',    icon:'🍑', name:'Hips',        desc:'Hip flexor, bursitis, labral tear' },
+  { id:'neck',    icon:'🧠', name:'Neck',        desc:'Cervical strain, disc issues' },
+  { id:'elbows',  icon:'💪', name:'Elbows',      desc:'Tennis/golfer\'s elbow, tendinitis' },
+  { id:'ankles',  icon:'🦶', name:'Ankles',      desc:'Sprain, Achilles, plantar fasciitis' }
+];
+
+// Map of exercise -> injuries that flag it, plus the alternative
+var INJURY_MAP = {
+  'Squat':               { risks:['back','knees','hips'],    alt:'Leg press',            reason:'Less spinal load, controlled knee tracking' },
+  'Romanian deadlift':   { risks:['back','hips'],            alt:'Leg curl',             reason:'Isolates hamstrings without hip hinge strain' },
+  'Deadlift':            { risks:['back','hips','knees'],    alt:'Hip thrust',           reason:'Builds posterior chain with neutral spine' },
+  'Rack pull':           { risks:['back'],                   alt:'Hip thrust',           reason:'Shorter range of motion, safer for back' },
+  'Bent-over row':       { risks:['back','wrists'],          alt:'Seated cable row',     reason:'Supported torso, less lower back stress' },
+  'Barbell row':         { risks:['back','wrists'],          alt:'Seated cable row',     reason:'Supported torso, less lower back stress' },
+  'Bench press':         { risks:['shoulders','wrists','elbows'], alt:'DB floor press',  reason:'Safer shoulder path, limited ROM protects joints' },
+  'Incline press':       { risks:['shoulders','wrists'],     alt:'Incline DB press',     reason:'Independent arms allow natural shoulder path' },
+  'Overhead press':      { risks:['shoulders','neck','back'],alt:'Lateral raises',       reason:'No overhead load, still targets delts' },
+  'OHP':                 { risks:['shoulders','neck','back'],alt:'Lateral raises',       reason:'No overhead load, still targets delts' },
+  'Pull-ups':            { risks:['shoulders','elbows','wrists'], alt:'Lat pulldown',    reason:'Same movement pattern, adjustable load' },
+  'Dips':                { risks:['shoulders','elbows','wrists'], alt:'Tricep pushdown', reason:'Elbow-friendly isolation movement' },
+  'Skull crushers':      { risks:['elbows','wrists'],        alt:'Overhead tricep ext',  reason:'Less elbow joint stress' },
+  'Lunges':              { risks:['knees','hips','ankles'],  alt:'Step-up',              reason:'More stable, less knee shear force' },
+  'Bulgarian split squat':{ risks:['knees','hips','ankles'], alt:'Step-up',             reason:'More stable, less knee shear force' },
+  'Leg press':           { risks:['knees','back'],           alt:'Seated leg extension', reason:'Isolates quads without spinal compression' },
+  'Leg curl':            { risks:['knees'],                  alt:'Nordic curl',          reason:'Eccentric focus, gentler on knee joint' },
+  'Calf raises':         { risks:['ankles'],                 alt:'Seated calf raise',    reason:'Less Achilles stress in seated position' },
+  'Front squat':         { risks:['back','knees','wrists'],  alt:'Goblet squat',        reason:'Easier wrist position, upright torso' },
+  'Hip thrust':          { risks:['back','hips'],            alt:'Glute bridge',         reason:'Floor-based, less lumbar stress' },
+  'Hanging leg raise':   { risks:['back','shoulders','wrists'], alt:'Lying leg raise',  reason:'No hanging load on shoulders or wrists' },
+  'Ab wheel':            { risks:['back','wrists'],          alt:'Plank',               reason:'No extension load on lumbar spine' },
+  'Russian twist':       { risks:['back'],                   alt:'Dead bug',            reason:'Neutral spine, safe rotational core work' },
+  'Cable crunch':        { risks:['back','neck'],            alt:'Plank',               reason:'Isometric core without spinal flexion' },
+  'Face pulls':          { risks:['shoulders','elbows'],     alt:'Band pull-apart',     reason:'Lighter load, same rear delt benefit' },
+  'Shrugs':              { risks:['neck','shoulders'],       alt:'Band pull-apart',     reason:'No neck compression, similar trap engagement' },
+  'Barbell curl':        { risks:['elbows','wrists'],        alt:'Hammer curl',         reason:'Neutral grip reduces elbow/wrist stress' },
+  'Concentration curl':  { risks:['elbows'],                 alt:'Cable curl',          reason:'Constant tension, easier on elbow joint' },
+  'Tricep pushdown':     { risks:['elbows','wrists'],        alt:'Overhead tricep ext', reason:'Different angle, often less elbow strain' },
+  'Lat pulldown':        { risks:['shoulders','elbows'],     alt:'Straight-arm pulldown', reason:'No elbow flexion, cable tension through ROM' },
+  'Incline DB press':    { risks:['shoulders','wrists'],     alt:'Cable chest fly',     reason:'Constant tension, no lockout stress' },
+  'Leg extension':       { risks:['knees'],                  alt:'Terminal knee extension', reason:'Less shear force on patella tendon' },
+  'Front squat':         { risks:['back','knees','wrists'],  alt:'Goblet squat',            reason:'Easier wrist position, more upright torso' },
+  'Leg press':           { risks:['knees','back'],           alt:'Seated leg extension',    reason:'Isolates quads without spinal compression' },
+  'Cable rows':          { risks:['back','wrists'],          alt:'Seated cable row',        reason:'Supported posture, controlled range of motion' },
+  'Front raises':        { risks:['shoulders','neck'],       alt:'Lateral raises',      reason:'No forward shoulder impingement risk' },
+  'Rear delt fly':       { risks:['shoulders','elbows'],     alt:'Band pull-apart',     reason:'Lighter load, same posterior delt work' }
+};
+
+function getInjuries(){ try{ return JSON.parse(localStorage.getItem('fitdash_injuries'))||[]; }catch(e){ return []; } }
+function saveInjuries(arr){ localStorage.setItem('fitdash_injuries',JSON.stringify(arr)); }
+
+function toggleInjury(id){
+  var arr=getInjuries();
+  var idx=arr.indexOf(id);
+  if(idx>=0) arr.splice(idx,1); else arr.push(id);
+  saveInjuries(arr);
+  renderInjuries();
+}
+
+function renderInjuries(){
+  var active=getInjuries();
+  var html='<div class="card"><p class="card-title">Your injuries &amp; limitations</p>'+
+    '<p style="font-size:13px;color:var(--text-muted);margin-bottom:1rem;">Select any areas you\'re dealing with. Risky exercises will be flagged in your Schedule and Log tabs with safer alternatives.</p>'+
+    '<div class="injury-grid">';
+  INJURIES.forEach(function(inj){
+    var isActive=active.indexOf(inj.id)>=0;
+    html+='<div class="injury-card'+(isActive?' active':'')+'" onclick="toggleInjury(\''+inj.id+'\')">'+
+      '<div class="injury-icon">'+inj.icon+'</div>'+
+      '<div class="injury-info"><div class="injury-name">'+inj.name+'</div><div class="injury-desc">'+inj.desc+'</div></div>'+
+      '<div class="injury-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg></div>'+
+    '</div>';
+  });
+  html+='</div></div>';
+
+  if(active.length>0){
+    // show which exercises are affected
+    var affected=[];
+    Object.keys(INJURY_MAP).forEach(function(ex){
+      var entry=INJURY_MAP[ex];
+      var triggered=entry.risks.filter(function(r){return active.indexOf(r)>=0;});
+      if(triggered.length>0) affected.push({name:ex,alt:entry.alt,reason:entry.reason,flags:triggered});
+    });
+    if(affected.length>0){
+      html+='<div class="card"><p class="card-title">Flagged exercises ('+affected.length+')</p>'+
+        '<p style="font-size:13px;color:var(--text-muted);margin-bottom:1rem;">These exercises may aggravate your selected injuries. Safer alternatives are shown in your Schedule and Log tabs.</p>'+
+        '<div style="display:flex;flex-direction:column;gap:10px;">';
+      affected.forEach(function(ex){
+        var injNames=ex.flags.map(function(f){return INJURIES.find(function(i){return i.id===f;}).name;}).join(', ');
+        html+='<div style="display:flex;align-items:flex-start;justify-content:space-between;padding:12px 14px;background:var(--surface2);border-radius:var(--radius);border-left:3px solid var(--amber);">'+
+          '<div>'+
+            '<div style="font-size:13px;font-weight:500;margin-bottom:3px;">'+ex.name+'</div>'+
+            '<div style="font-size:12px;color:var(--text-muted);">Flags: '+injNames+'</div>'+
+            '<div style="font-size:12px;color:var(--accent);margin-top:3px;">Alt: '+ex.alt+' &mdash; '+ex.reason+'</div>'+
+          '</div>'+
+          '<span class="warn-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>Risk</span>'+
+        '</div>';
+      });
+      html+='</div></div>';
+    }
+  }
+  document.getElementById('injuries-content').innerHTML=html;
+
+  // refresh schedule and log if already calculated
+  if(calculated){
+    var schedEl=document.getElementById('sched-content');
+    if(schedEl&&schedEl.querySelector('.week-grid')) calculate_silent();
+  }
+}
+
+// silent recalc just refreshes schedule/log injury badges without switching tabs
+function calculate_silent(){
+  var todayIdx=(new Date().getDay()+6)%7;
+  var sched=SPLITS[splitDays];
+  var logs=getLogs();
+  var todayStr=todayDate();
+  var bIcon='<svg class="day-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4v16M18 4v16M2 9h4M18 9h4M2 15h4M18 15h4M6 12h12"/></svg>';
+  var rIcon='<svg class="day-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 009 9 9 9 0 11-9-9z"/></svg>';
+  var days7=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  var weekHtml='';
+  for(var i=0;i<7;i++){
+    var focus=sched[i];var isRest=focus==='Rest';var isToday=i===todayIdx;
+    var isLogged=!!(logs[todayStr]&&!isRest);
+    weekHtml+='<div class="day-card'+(isRest?' rest':'')+(isToday&&!isLogged?' today':'')+(isLogged&&isToday?' logged':'')+'" '+(isRest?'':'onclick="showTab(\'log\')"')+'><span class="day-name">'+days7[i]+'</span>'+(isRest?rIcon:bIcon)+'<span class="day-focus">'+focus+'</span></div>';
+  }
+  document.getElementById('sched-content').innerHTML='<div class="card"><p class="card-title">'+SPLIT_NAMES[splitDays]+' - this week</p><div class="week-grid">'+weekHtml+'</div></div><div class="card"><p class="card-title">Exercise guide</p>'+buildExGuide(splitDays)+'</div>';
+}
+
+function isExerciseRisky(exName){
+  var active=getInjuries();
+  if(!active.length) return false;
+  var entry=INJURY_MAP[exName];
+  if(!entry) return false;
+  return entry.risks.some(function(r){return active.indexOf(r)>=0;});
+}
+
+function getAlt(exName){ return INJURY_MAP[exName]||null; }
+
+// ── End injury data ────────────────────────────────────────────────────────────
+
 window.addEventListener('DOMContentLoaded',function(){
   loadProfile();
+  renderInjuries();
   try{
     var p=JSON.parse(localStorage.getItem('fitdash_profile'));
     if(p&&p.age&&p.height&&p.weight)setTimeout(calculate,100);
