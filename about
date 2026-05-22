@@ -1,6 +1,7 @@
 # Personal Workout & Nutrition Dashboard
 
-A clean, dark-mode fitness dashboard that calculates personalised calorie goals, macros, water intake, daily steps, and generates a weekly workout schedule based on your stats and preferences.
+A clean, dark-mode fitness dashboard that calculates personalised calorie goals, macros, water intake, daily steps, and generates a weekly workout schedule based on your stats and preferences. Runs from a browser
+saves locally only. 
 
 
 ## Features
