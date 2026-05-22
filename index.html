@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FitDash — Personal Workout & Nutrition Dashboard</title>
+  <meta name="description" content="A personalised fitness dashboard for calorie goals, macros, water intake, daily steps, and workout schedules.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0e0f11;
+      --surface: #16181c;
+      --surface2: #1e2026;
+      --border: rgba(255,255,255,0.07);
+      --border-hover: rgba(255,255,255,0.14);
+      --text: #f0f0f0;
+      --text-muted: #7a7d87;
+      --text-dim: #4a4d57;
+      --accent: #6ee7b7;
+      --accent-bg: rgba(110,231,183,0.1);
+      --accent-border: rgba(110,231,183,0.25);
+      --blue: #60a5fa;
+      --blue-bg: rgba(96,165,250,0.1);
+      --amber: #fbbf24;
+      --amber-bg: rgba(251,191,36,0.1);
+      --red: #f87171;
+      --radius: 10px;
+      --radius-lg: 14px;
+      --font: 'DM Sans', sans-serif;
+      --mono: 'DM Mono', monospace;
+    }
+
+    body {
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      font-size: 15px;
+      line-height: 1.5;
+    }
+
+    /* Layout */
+    .app { max-width: 760px; margin: 0 auto; padding: 2rem 1.25rem 4rem; }
+
+    /* Header */
+    .header { margin-bottom: 2.5rem; }
+    .header-top { display: flex; align-items: center; gap: 12px; margin-bottom: 4px; }
+    .logo { width: 32px; height: 32px; background: var(--accent); border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .logo svg { width: 18px; height: 18px; }
+    h1 { font-size: 22px; font-weight: 600; letter-spacing: -0.02em; color: var(--text); }
+    .header p { font-size: 14px; color: var(--text-muted); margin-left: 44px; }
+
+    /* Tabs */
+    .tabs { display: flex; gap: 2px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 4px; margin-bottom: 1.5rem; }
+    .tab { flex: 1; padding: 8px 12px; font-size: 13px; font-family: var(--font); font-weight: 500; cursor: pointer; background: none; border: none; color: var(--text-muted); border-radius: 7px; transition: all 0.15s; display: flex; align-items: center; justify-content: center; gap: 6px; }
+    .tab svg { width: 15px; height: 15px; flex-shrink: 0; }
+    .tab:hover { color: var(--text); }
+    .tab.active { background: var(--surface2); color: var(--text); border: 1px solid var(--border-hover); }
+
+    /* Panes */
+    .pane { display: none; }
+    .pane.show { display: block; }
+
+    /* Cards */
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1.25rem; margin-bottom: 1rem; }
+    .card-title { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); margin-bottom: 1rem; }
+
+    /* Unit toggle */
+    .unit-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem; }
+    .unit-row-label { font-size: 13px; color: var(--text-muted); font-weight: 500; }
+    .unit-toggles { display: flex; gap: 10px; }
+    .unit-group { display: flex; flex-direction: column; align-items: center; gap: 5px; }
+    .unit-group-label { font-size: 11px; color: var(--text-dim); }
+    .toggle { display: flex; background: var(--surface2); border: 1px solid var(--border); border-radius: 7px; overflow: hidden; }
+    .toggle-btn { padding: 4px 13px; font-size: 12px; font-family: var(--font); font-weight: 500; cursor: pointer; border: none; background: none; color: var(--text-muted); transition: all 0.15s; }
+    .toggle-btn.active { background: var(--accent-bg); color: var(--accent); border: 1px solid var(--accent-border); border-radius: 6px; margin: 1px; }
+
+    /* Form */
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+    .form-group { display: flex; flex-direction: column; gap: 6px; }
+    .form-group label { font-size: 12px; font-weight: 500; color: var(--text-muted); }
+    input[type=number], select {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 9px 12px;
+      font-size: 14px;
+      font-family: var(--font);
+      color: var(--text);
+      width: 100%;
+      transition: border-color 0.15s;
+      -moz-appearance: textfield;
+    }
+    input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; }
+    input[type=number]:focus, select:focus { outline: none; border-color: var(--accent-border); }
+    select { cursor: pointer; }
+    select option { background: #1e2026; }
+
+    /* Divider */
+    hr { border: none; border-top: 1px solid var(--border); margin: 1.25rem 0; }
+
+    /* Pill buttons */
+    .pill-group { display: flex; gap: 6px; flex-wrap: wrap; }
+    .pill { padding: 6px 14px; font-size: 13px; font-family: var(--font); font-weight: 500; cursor: pointer; background: var(--surface2); border: 1px solid var(--border); border-radius: 20px; color: var(--text-muted); transition: all 0.15s; }
+    .pill:hover { border-color: var(--border-hover); color: var(--text); }
+    .pill.active { background: var(--accent-bg); border-color: var(--accent-border); color: var(--accent); }
+
+    /* Calculate button */
+    .btn-calc {
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      width: 100%; padding: 12px; margin-top: 1rem;
+      background: var(--accent); border: none; border-radius: var(--radius);
+      font-size: 14px; font-family: var(--font); font-weight: 600;
+      color: #0a1a12; cursor: pointer; transition: opacity 0.15s, transform 0.1s;
+    }
+    .btn-calc:hover { opacity: 0.9; }
+    .btn-calc:active { transform: scale(0.99); }
+    .btn-calc svg { width: 16px; height: 16px; }
+
+    /* Metric cards */
+    .metric-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 1rem; }
+    .metric { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 12px; }
+    .metric-label { font-size: 11px; color: var(--text-muted); margin-bottom: 6px; display: flex; align-items: center; gap: 5px; }
+    .metric-label svg { width: 13px; height: 13px; }
+    .metric-value { font-size: 21px; font-weight: 600; font-family: var(--mono); letter-spacing: -0.02em; }
+    .metric-unit { font-size: 12px; font-weight: 400; color: var(--text-muted); font-family: var(--font); }
+
+    /* Macro bar */
+    .macro-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 14px; }
+    .macro-item .macro-label { font-size: 12px; color: var(--text-muted); margin-bottom: 3px; }
+    .macro-item .macro-val { font-size: 19px; font-weight: 600; font-family: var(--mono); }
+    .macro-item .macro-sub { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+    .bar-track { height: 5px; background: var(--surface2); border-radius: 3px; overflow: hidden; margin-top: 6px; }
+    .bar-fill { height: 100%; border-radius: 3px; }
+    .combo-bar { height: 8px; border-radius: 4px; overflow: hidden; display: flex; }
+
+    /* Weight overview */
+    .weight-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+
+    /* Progress badge */
+    .goal-badge { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 20px; background: var(--accent-bg); color: var(--accent); border: 1px solid var(--accent-border); }
+
+    /* Schedule */
+    .week-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; margin-bottom: 1.5rem; }
+    .day-card { display: flex; flex-direction: column; align-items: center; gap: 5px; padding: 10px 4px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); }
+    .day-card.today { border-color: var(--accent-border); background: var(--accent-bg); }
+    .day-card.rest { opacity: 0.4; }
+    .day-name { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); }
+    .day-card.today .day-name { color: var(--accent); }
+    .day-icon { width: 20px; height: 20px; }
+    .day-focus { font-size: 11px; font-weight: 600; text-align: center; line-height: 1.3; color: var(--text); }
+    .day-card.today .day-focus { color: var(--accent); }
+
+    /* Exercise list */
+    .exercise-block { margin-bottom: 16px; }
+    .exercise-day-label { font-size: 12px; font-weight: 600; color: var(--text); margin-bottom: 8px; }
+    .exercise-pills { display: flex; flex-wrap: wrap; gap: 6px; }
+    .ex-pill { font-size: 12px; font-family: var(--mono); background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 3px 10px; color: var(--text-muted); }
+
+    /* Empty state */
+    .empty { text-align: center; padding: 3rem 0; color: var(--text-muted); }
+    .empty svg { width: 36px; height: 36px; margin: 0 auto 10px; display: block; opacity: 0.3; }
+    .empty p { font-size: 14px; }
+
+    /* Footer */
+    .footer-note { font-size: 12px; color: var(--text-dim); margin-top: 1rem; }
+
+    @media (max-width: 480px) {
+      .metric-grid { grid-template-columns: repeat(2, 1fr); }
+      .macro-grid { grid-template-columns: repeat(3, 1fr); gap: 10px; }
+      .form-grid { grid-template-columns: 1fr; }
+      .day-focus { font-size: 10px; }
+    }
+  </style>
+</head>
+<body>
+<div class="app">
+
+  <header class="header">
+    <div class="header-top">
+      <div class="logo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#0a1a12" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M6 4v16M18 4v16M2 9h4M18 9h4M2 15h4M18 15h4"/>
+        </svg>
+      </div>
+      <h1>FitDash</h1>
+    </div>
+    <p>Personal workout & nutrition planner</p>
+  </header>
+
+  <nav class="tabs">
+    <button class="tab active" id="tab-btn-profile" onclick="showTab('profile')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+      Profile
+    </button>
+    <button class="tab" id="tab-btn-dashboard" onclick="showTab('dashboard')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>
+      Dashboard
+    </button>
+    <button class="tab" id="tab-btn-schedule" onclick="showTab('schedule')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+      Schedule
+    </button>
+  </nav>
+
+  <!-- PROFILE -->
+  <div id="pane-profile" class="pane show">
+    <div class="card">
+      <div class="unit-row">
+        <span class="unit-row-label">Units</span>
+        <div class="unit-toggles">
+          <div class="unit-group">
+            <span class="unit-group-label">Height</span>
+            <div class="toggle">
+              <button class="toggle-btn active" id="btn-cm" onclick="setHeightUnit('cm')">cm</button>
+              <button class="toggle-btn" id="btn-in" onclick="setHeightUnit('in')">in</button>
+            </div>
+          </div>
+          <div class="unit-group">
+            <span class="unit-group-label">Weight</span>
+            <div class="toggle">
+              <button class="toggle-btn active" id="btn-kg" onclick="setWeightUnit('kg')">kg</button>
+              <button class="toggle-btn" id="btn-lbs" onclick="setWeightUnit('lbs')">lbs</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <hr style="margin-top:0;">
+
+      <div class="form-grid">
+        <div class="form-group"><label>Age</label><input type="number" id="age" placeholder="e.g. 30" min="15" max="90"></div>
+        <div class="form-group"><label>Gender</label>
+          <select id="gender"><option value="male">Male</option><option value="female">Female</option></select>
+        </div>
+      </div>
+      <div class="form-grid">
+        <div class="form-group"><label id="lbl-height">Height (cm)</label><input type="number" id="height" placeholder="e.g. 175" step="0.1"></div>
+        <div class="form-group"><label id="lbl-weight">Current weight (kg)</label><input type="number" id="weight" placeholder="e.g. 80" step="0.1"></div>
+      </div>
+      <div class="form-grid">
+        <div class="form-group"><label id="lbl-goal-weight">Goal weight (kg)</label><input type="number" id="goalWeight" placeholder="e.g. 72" step="0.1"></div>
+        <div class="form-group"><label>Activity level</label>
+          <select id="activity">
+            <option value="1.2">Sedentary (desk job)</option>
+            <option value="1.375">Lightly active (1–3×/wk)</option>
+            <option value="1.55" selected>Moderately active (3–5×/wk)</option>
+            <option value="1.725">Very active (6–7×/wk)</option>
+          </select>
+        </div>
+      </div>
+      <hr>
+      <div class="form-group" style="margin-bottom:12px;">
+        <label style="margin-bottom:8px;">Fitness goal</label>
+        <div class="pill-group" id="goalGroup">
+          <button class="pill active" data-val="loss" onclick="setGoal(this)">Weight loss</button>
+          <button class="pill" data-val="gain" onclick="setGoal(this)">Muscle gain</button>
+          <button class="pill" data-val="maintain" onclick="setGoal(this)">Maintenance</button>
+        </div>
+      </div>
+      <div class="form-group">
+        <label style="margin-bottom:8px;">Workout split</label>
+        <div class="pill-group" id="splitGroup">
+          <button class="pill active" data-val="3" onclick="setSplit(this)">3-day full body</button>
+          <button class="pill" data-val="4" onclick="setSplit(this)">4-day upper/lower</button>
+          <button class="pill" data-val="5" onclick="setSplit(this)">5-day PPL</button>
+          <button class="pill" data-val="6" onclick="setSplit(this)">6-day bro split</button>
+        </div>
+      </div>
+      <button class="btn-calc" onclick="calculate()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M8 6h8M8 10h8M8 14h5"/></svg>
+        Calculate my goals
+      </button>
+    </div>
+  </div>
+
+  <!-- DASHBOARD -->
+  <div id="pane-dashboard" class="pane">
+    <div id="dash-content">
+      <div class="empty">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>
+        <p>Fill in your profile and hit <strong>Calculate my goals</strong> to see your dashboard.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCHEDULE -->
+  <div id="pane-schedule" class="pane">
+    <div id="sched-content">
+      <div class="empty">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+        <p>Fill in your profile and hit <strong>Calculate my goals</strong> to see your schedule.</p>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  let fitnessGoal = 'loss', splitDays = 3, heightUnit = 'cm', weightUnit = 'kg';
+
+  function showTab(name) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.pane').forEach(p => p.classList.remove('show'));
+    document.getElementById('pane-' + name).classList.add('show');
+    document.getElementById('tab-btn-' + name).classList.add('active');
+  }
+
+  function setHeightUnit(unit) {
+    const val = parseFloat(document.getElementById('height').value);
+    if (unit === 'in' && heightUnit === 'cm' && val) document.getElementById('height').value = Math.round(val / 2.54 * 10) / 10;
+    else if (unit === 'cm' && heightUnit === 'in' && val) document.getElementById('height').value = Math.round(val * 2.54 * 10) / 10;
+    heightUnit = unit;
+    document.getElementById('lbl-height').textContent = `Height (${unit})`;
+    document.getElementById('height').placeholder = unit === 'cm' ? 'e.g. 175' : 'e.g. 69';
+    document.getElementById('btn-cm').classList.toggle('active', unit === 'cm');
+    document.getElementById('btn-in').classList.toggle('active', unit === 'in');
+  }
+
+  function setWeightUnit(unit) {
+    ['weight','goalWeight'].forEach(id => {
+      const val = parseFloat(document.getElementById(id).value);
+      if (unit === 'lbs' && weightUnit === 'kg' && val) document.getElementById(id).value = Math.round(val * 2.2046 * 10) / 10;
+      else if (unit === 'kg' && weightUnit === 'lbs' && val) document.getElementById(id).value = Math.round(val / 2.2046 * 10) / 10;
+    });
+    weightUnit = unit;
+    document.getElementById('lbl-weight').textContent = `Current weight (${unit})`;
+    document.getElementById('lbl-goal-weight').textContent = `Goal weight (${unit})`;
+    document.getElementById('weight').placeholder = unit === 'kg' ? 'e.g. 80' : 'e.g. 176';
+    document.getElementById('goalWeight').placeholder = unit === 'kg' ? 'e.g. 72' : 'e.g. 158';
+    document.getElementById('btn-kg').classList.toggle('active', unit === 'kg');
+    document.getElementById('btn-lbs').classList.toggle('active', unit === 'lbs');
+  }
+
+  function setGoal(btn) {
+    document.querySelectorAll('#goalGroup .pill').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active'); fitnessGoal = btn.dataset.val;
+  }
+
+  function setSplit(btn) {
+    document.querySelectorAll('#splitGroup .pill').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active'); splitDays = parseInt(btn.dataset.val);
+  }
+
+  function calculate() {
+    const age = parseFloat(document.getElementById('age').value);
+    const gender = document.getElementById('gender').value;
+    const activity = parseFloat(document.getElementById('activity').value);
+    const heightRaw = parseFloat(document.getElementById('height').value);
+    const weightRaw = parseFloat(document.getElementById('weight').value);
+    const goalWeightRaw = parseFloat(document.getElementById('goalWeight').value) || weightRaw;
+    if (!age || !heightRaw || !weightRaw) { alert('Please fill in age, height, and current weight.'); return; }
+
+    const hCm = heightUnit === 'in' ? heightRaw * 2.54 : heightRaw;
+    const wKg = weightUnit === 'lbs' ? weightRaw / 2.2046 : weightRaw;
+    const gKg = weightUnit === 'lbs' ? goalWeightRaw / 2.2046 : goalWeightRaw;
+
+    const bmr = gender === 'male' ? 10*wKg + 6.25*hCm - 5*age + 5 : 10*wKg + 6.25*hCm - 5*age - 161;
+    const tdee = Math.round(bmr * activity);
+    const cal = Math.round(fitnessGoal === 'loss' ? tdee - 500 : fitnessGoal === 'gain' ? tdee + 300 : tdee);
+    const protein = Math.round(wKg * 2.2);
+    const fat = Math.round((cal * 0.25) / 9);
+    const carbs = Math.round((cal - protein*4 - fat*9) / 4);
+    const waterL = (wKg * 35 / 1000).toFixed(1);
+    const steps = fitnessGoal === 'loss' ? 10000 : fitnessGoal === 'gain' ? 7000 : 8000;
+    const bmi = (wKg / ((hCm/100)**2)).toFixed(1);
+    const pPct = Math.round(protein*4/cal*100);
+    const fPct = Math.round(fat*9/cal*100);
+    const cPct = 100 - pPct - fPct;
+    const wU = weightUnit;
+    const dCur = weightUnit === 'lbs' ? weightRaw.toFixed(1) : wKg.toFixed(1);
+    const dGoal = weightUnit === 'lbs' ? goalWeightRaw.toFixed(1) : gKg.toFixed(1);
+    const diffKg = wKg - gKg;
+    const dDiff = weightUnit === 'lbs' ? Math.abs(Math.round(diffKg*2.2046*10)/10) : Math.abs(Math.round(diffKg*10)/10);
+    const diffLabel = diffKg > 0.1 ? 'To lose' : diffKg < -0.1 ? 'To gain' : 'At goal ✓';
+    const goalLabel = fitnessGoal === 'loss' ? 'Weight loss' : fitnessGoal === 'gain' ? 'Muscle gain' : 'Maintenance';
+
+    document.getElementById('dash-content').innerHTML = `
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;">
+        <p class="card-title" style="margin:0;">Daily targets</p>
+        <span class="goal-badge">${goalLabel}</span>
+      </div>
+      <div class="metric-grid">
+        <div class="metric"><div class="metric-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2c0 6-6 10-6 16a6 6 0 0012 0c0-6-6-10-6-16z"/></svg>Calories</div><div class="metric-value">${cal.toLocaleString()} <span class="metric-unit">kcal</span></div></div>
+        <div class="metric"><div class="metric-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2c0 6-5 9-5 14a5 5 0 0010 0c0-5-5-8-5-14z"/></svg>Water</div><div class="metric-value">${waterL} <span class="metric-unit">L</span></div></div>
+        <div class="metric"><div class="metric-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 16l4-8 4 4 4-6 4 10"/></svg>Steps</div><div class="metric-value">${steps.toLocaleString()}</div></div>
+        <div class="metric"><div class="metric-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>BMI</div><div class="metric-value">${bmi}</div></div>
+      </div>
+
+      <div class="card">
+        <p class="card-title">Macros</p>
+        <div class="macro-grid">
+          <div class="macro-item">
+            <div class="macro-label">Protein</div>
+            <div class="macro-val" style="color:#60a5fa;">${protein}g</div>
+            <div class="macro-sub">${pPct}% · ${protein*4} kcal</div>
+            <div class="bar-track"><div class="bar-fill" style="width:${pPct}%;background:#60a5fa;"></div></div>
+          </div>
+          <div class="macro-item">
+            <div class="macro-label">Carbs</div>
+            <div class="macro-val" style="color:#6ee7b7;">${carbs}g</div>
+            <div class="macro-sub">${cPct}% · ${carbs*4} kcal</div>
+            <div class="bar-track"><div class="bar-fill" style="width:${cPct}%;background:#6ee7b7;"></div></div>
+          </div>
+          <div class="macro-item">
+            <div class="macro-label">Fat</div>
+            <div class="macro-val" style="color:#fbbf24;">${fat}g</div>
+            <div class="macro-sub">${fPct}% · ${fat*9} kcal</div>
+            <div class="bar-track"><div class="bar-fill" style="width:${fPct}%;background:#fbbf24;"></div></div>
+          </div>
+        </div>
+        <div class="combo-bar">
+          <div style="width:${pPct}%;background:#60a5fa;"></div>
+          <div style="width:${cPct}%;background:#6ee7b7;"></div>
+          <div style="width:${fPct}%;background:#fbbf24;"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <p class="card-title">Weight overview</p>
+        <div class="weight-grid">
+          <div class="metric"><div class="metric-label">Current</div><div class="metric-value">${dCur} <span class="metric-unit">${wU}</span></div></div>
+          <div class="metric"><div class="metric-label">Goal</div><div class="metric-value">${dGoal} <span class="metric-unit">${wU}</span></div></div>
+          <div class="metric"><div class="metric-label">${diffLabel}</div><div class="metric-value">${dDiff} <span class="metric-unit">${wU}</span></div></div>
+        </div>
+      </div>
+
+      <p class="footer-note">Estimates based on Mifflin-St Jeor BMR formula. Always consult a healthcare professional for personalised advice.</p>
+    `;
+
+    const days = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+    const todayIdx = (new Date().getDay() + 6) % 7;
+    const splits = {
+      3:['Full body','Rest','Full body','Rest','Full body','Rest','Rest'],
+      4:['Upper','Lower','Rest','Upper','Lower','Rest','Rest'],
+      5:['Push','Pull','Legs','Rest','Push','Pull','Legs'],
+      6:['Chest','Back','Shoulders','Arms','Legs','Core','Rest']
+    };
+    const splitNames = {3:'3-day full body',4:'4-day upper/lower',5:'5-day push/pull/legs',6:'6-day bro split'};
+    const sched = splits[splitDays];
+
+    const barbellIcon = `<svg class="day-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4v16M18 4v16M2 9h4M18 9h4M2 15h4M18 15h4M6 12h12"/></svg>`;
+    const restIcon = `<svg class="day-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 009 9 9 9 0 11-9-9z"/></svg>`;
+
+    document.getElementById('sched-content').innerHTML = `
+      <div class="card">
+        <p class="card-title">${splitNames[splitDays]} — this week</p>
+        <div class="week-grid">
+          ${days.map((d,i) => {
+            const focus = sched[i];
+            const isRest = focus === 'Rest';
+            const isToday = i === todayIdx;
+            return `<div class="day-card ${isRest?'rest':''} ${isToday?'today':''}">
+              <span class="day-name">${d}</span>
+              ${isRest ? restIcon : barbellIcon}
+              <span class="day-focus">${focus}</span>
+            </div>`;
+          }).join('')}
+        </div>
+      </div>
+      <div class="card">
+        <p class="card-title">Exercise guide</p>
+        ${buildSplitDetail(splitDays)}
+      </div>
+    `;
+
+    showTab('dashboard');
+  }
+
+  function buildSplitDetail(days) {
+    const d = {
+      3:[
+        {day:'Full body — A',items:['Squat · 4×8','Bench press · 4×8','Bent-over row · 3×10','Overhead press · 3×10','Romanian deadlift · 3×12']},
+        {day:'Full body — B',items:['Deadlift · 4×5','Incline press · 3×10','Pull-ups · 3×8','Lateral raises · 3×15','Lunges · 3×12']},
+        {day:'Full body — C',items:['Front squat · 3×8','Dips · 3×10','Cable rows · 3×12','Face pulls · 3×15','Leg press · 3×12']}
+      ],
+      4:[
+        {day:'Upper A',items:['Bench press · 4×8','Barbell row · 4×8','OHP · 3×10','Pull-ups · 3×8','Tricep pushdown · 3×12']},
+        {day:'Lower A',items:['Squat · 4×6','Romanian deadlift · 3×10','Leg press · 3×12','Leg curl · 3×12','Calf raises · 4×15']},
+        {day:'Upper B',items:['Incline press · 4×10','Seated cable row · 4×10','Lateral raises · 3×15','Face pulls · 3×15','Bicep curl · 3×12']},
+        {day:'Lower B',items:['Deadlift · 4×5','Bulgarian split squat · 3×10','Leg extension · 3×12','Hip thrust · 3×12','Calf raises · 4×15']}
+      ],
+      5:[
+        {day:'Push',items:['Bench press · 4×8','OHP · 3×10','Incline DB press · 3×12','Lateral raises · 3×15','Tricep pushdown · 3×12']},
+        {day:'Pull',items:['Deadlift · 4×5','Pull-ups · 4×8','Barbell row · 3×10','Face pulls · 3×15','Bicep curl · 3×12']},
+        {day:'Legs',items:['Squat · 4×8','Romanian deadlift · 3×10','Leg press · 3×12','Leg curl · 3×12','Calf raises · 4×15']},
+        {day:'Push (repeat)',items:['Bench press · 3×10','OHP · 3×12','Cable fly · 3×15','Lateral raises · 3×15','Overhead tricep ext · 3×12']},
+        {day:'Pull (repeat)',items:['Rack pull · 3×6','Lat pulldown · 3×10','Seated cable row · 3×12','Face pulls · 3×15','Hammer curl · 3×12']}
+      ],
+      6:[
+        {day:'Chest',items:['Bench press · 4×8','Incline press · 3×10','Cable fly · 3×15','Dips · 3×10','Push-ups · 2×failure']},
+        {day:'Back',items:['Deadlift · 4×5','Pull-ups · 4×8','Cable row · 3×12','Lat pulldown · 3×10','Face pulls · 3×15']},
+        {day:'Shoulders',items:['OHP · 4×8','Lateral raises · 4×15','Front raises · 3×12','Rear delt fly · 3×15','Shrugs · 3×12']},
+        {day:'Arms',items:['Barbell curl · 4×10','Tricep pushdown · 4×10','Hammer curl · 3×12','Skull crushers · 3×12','Concentration curl · 3×12']},
+        {day:'Legs',items:['Squat · 4×6','Romanian deadlift · 3×10','Leg press · 3×12','Leg curl · 3×12','Calf raises · 4×15']},
+        {day:'Core',items:['Plank · 3×60s','Cable crunch · 3×15','Hanging leg raise · 3×12','Russian twist · 3×20','Ab wheel · 3×10']}
+      ]
+    };
+    return d[days].map(item => `
+      <div class="exercise-block">
+        <div class="exercise-day-label">${item.day}</div>
+        <div class="exercise-pills">${item.items.map(e => `<span class="ex-pill">${e}</span>`).join('')}</div>
+      </div>
+    `).join('');
+  }
+</script>
+</body>
+</html>
