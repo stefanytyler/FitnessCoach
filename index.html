@@ -94,7 +94,10 @@
     .exercise-block { margin-bottom: 16px; }
     .exercise-day-label { font-size: 12px; font-weight: 600; color: var(--text); margin-bottom: 8px; }
     .exercise-pills { display: flex; flex-wrap: wrap; gap: 6px; }
-    .ex-pill { font-size: 12px; font-family: var(--mono); background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 3px 10px; color: var(--text-muted); }
+    .ex-pill { font-size: 12px; font-family: var(--mono); background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 3px 10px; color: var(--text-muted); text-decoration: none; display: inline-flex; align-items: center; gap: 5px; transition: border-color 0.15s, color 0.15s; }
+    .ex-pill:hover { border-color: var(--red-border); color: var(--text); }
+    .ex-pill .yt { width: 11px; height: 11px; flex-shrink: 0; opacity: 0.5; }
+    .ex-pill:hover .yt { opacity: 1; }
     .exercise-log-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); margin-bottom: 10px; overflow: hidden; }
     .exercise-log-header { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; cursor: pointer; user-select: none; }
     .exercise-log-header:hover { background: var(--surface2); }
@@ -438,12 +441,20 @@ function calculate(){
   showTab('dashboard');
 }
 
+var YT_ICON='<svg class="yt" viewBox="0 0 24 24" fill="currentColor" style="color:#f87171;"><path d="M23 7s-.3-2-1.2-2.8c-1.1-1.2-2.4-1.2-3-1.3C16.2 2.8 12 2.8 12 2.8s-4.2 0-6.8.2c-.6.1-1.9.1-3 1.3C1.3 5 1 7 1 7S.7 9.1.7 11.2v2c0 2 .3 4.1.3 4.1s.3 2 1.2 2.8c1.1 1.2 2.6 1.1 3.3 1.2C7.5 21.5 12 21.5 12 21.5s4.2 0 6.8-.2c.6-.1 1.9-.1 3-1.3.9-.8 1.2-2.8 1.2-2.8s.3-2.1.3-4.1v-2C23.3 9.1 23 7 23 7zM9.7 15.5V8.4l8.1 3.6-8.1 3.5z"/></svg>';
+
+function ytLink(exercise){
+  return 'https://www.youtube.com/results?search_query='+encodeURIComponent(exercise+' exercise form tutorial');
+}
+
 function buildExGuide(days){
   var html='';
   var exMap=EXERCISES[days];
   Object.keys(exMap).forEach(function(day){
     html+='<div class="exercise-block"><div class="exercise-day-label">'+day+'</div><div class="exercise-pills">';
-    exMap[day].forEach(function(e){html+='<span class="ex-pill">'+e+'</span>';});
+    exMap[day].forEach(function(e){
+      html+='<a class="ex-pill" href="'+ytLink(e)+'" target="_blank" rel="noopener" title="Watch '+e+' demo on YouTube">'+YT_ICON+e+'</a>';
+    });
     html+='</div></div>';
   });
   return html;
@@ -501,6 +512,9 @@ function renderLog(){
               '<svg class="ck" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg>'+
             '</div>'+
             '<span class="ex-name">'+exName+'</span>'+
+            '<a href="'+ytLink(exName)+'" target="_blank" rel="noopener" title="Watch '+exName+' demo" onclick="event.stopPropagation()" style="display:inline-flex;align-items:center;color:var(--red);opacity:0.5;transition:opacity 0.15s;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.5">'+
+              '<svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M23 7s-.3-2-1.2-2.8c-1.1-1.2-2.4-1.2-3-1.3C16.2 2.8 12 2.8 12 2.8s-4.2 0-6.8.2c-.6.1-1.9.1-3 1.3C1.3 5 1 7 1 7S.7 9.1.7 11.2v2c0 2 .3 4.1.3 4.1s.3 2 1.2 2.8c1.1 1.2 2.6 1.1 3.3 1.2C7.5 21.5 12 21.5 12 21.5s4.2 0 6.8-.2c.6-.1 1.9-.1 3-1.3.9-.8 1.2-2.8 1.2-2.8s.3-2.1.3-4.1v-2C23.3 9.1 23 7 23 7zM9.7 15.5V8.4l8.1 3.6-8.1 3.5z"/></svg>'+
+            '</a>'+
           '</div>'+
           '<div style="display:flex;align-items:center;gap:8px;">'+
             '<span class="ex-set-count" id="setcount-'+ei+'">'+exLog.sets.length+' set'+(exLog.sets.length!==1?'s':'')+'</span>'+
